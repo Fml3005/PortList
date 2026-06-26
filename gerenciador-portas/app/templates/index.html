@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Portas Rancher</title>
+    <title>Gerenciador de Portas e Ambientes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -20,7 +20,6 @@
         .theme-toggle:hover {
             background-color: rgba(128, 128, 128, 0.1);
         }
-        /* Estilo para indicar que as colunas são clicáveis para ordenar */
         .sortable {
             cursor: pointer;
             user-select: none;
@@ -44,7 +43,7 @@
         </div>
 
         <div class="text-center mb-4">
-            <h2 class="text-secondary-emphasis fw-bold">📋 Controle de Portas - Rancher</h2>
+            <h2 class="text-secondary-emphasis fw-bold">📋 Controle de Portas por Ambiente</h2>
         </div>
 
         <div class="card mb-4 shadow-sm">
@@ -53,11 +52,11 @@
                 <form action="/adicionar" method="POST" class="row g-3">
                     <input type="hidden" name="ambiente" value="{{ aba_ativa }}">
                     <div class="col-md-2">
-                        <label class="form-label fw-medium">Namespace</label>
+                        <label class="form-label fw-medium">Namespace / Contexto</label>
                         <input type="text" name="namespace" class="form-control" required placeholder="ex: default">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-medium">Deploy/Workload</label>
+                        <label class="form-label fw-medium">Deploy / Serviço</label>
                         <input type="text" name="deploy" class="form-control" required placeholder="ex: nginx-api">
                     </div>
                     <div class="col-md-2">
@@ -65,12 +64,12 @@
                         <input type="number" name="port" class="form-control" required placeholder="ex: 80">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label fw-medium">NodePort</label>
+                        <label class="form-label fw-medium">NodePort / Porta Externa</label>
                         <input type="number" name="nodeport" class="form-control" required placeholder="ex: 30080">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-medium">Link URL (Opcional)</label>
-                        <input type="url" name="link" class="form-control" placeholder="https://rancher.empresa.com/...">
+                        <label class="form-label fw-medium">Link da Aplicação (Opcional)</label>
+                        <input type="url" name="link" class="form-control" placeholder="https://sistema.empresa.com">
                     </div>
                     <div class="col-12 d-flex justify-content-end mt-3">
                         <button type="submit" class="btn btn-primary px-4">Adicionar em {{ aba_ativa.capitalize() }}</button>
@@ -93,14 +92,14 @@
 
         <div class="card shadow-sm">
             <div class="table-responsive">
-                <table class="table table-striped table-hover mb-0" id="rancherTable">
+                <table class="table table-striped table-hover mb-0" id="infraTable">
                     <thead class="table-dark">
                         <tr>
-                            <th class="sortable" data-index="0" data-type="text">Namespace <i class="fa-solid fa-sort sort-icon"></i></th>
-                            <th class="sortable" data-index="1" data-type="text">Deploy <i class="fa-solid fa-sort sort-icon"></i></th>
+                            <th class="sortable" data-index="0" data-type="text">Namespace / Contexto <i class="fa-solid fa-sort sort-icon"></i></th>
+                            <th class="sortable" data-index="1" data-type="text">Deploy / Serviço <i class="fa-solid fa-sort sort-icon"></i></th>
                             <th class="sortable" data-index="2" data-type="number">Port <i class="fa-solid fa-sort sort-icon"></i></th>
                             <th class="sortable" data-index="3" data-type="number">NodePort <i class="fa-solid fa-sort sort-icon"></i></th>
-                            <th>Rancher Link</th>
+                            <th>Link Direto</th>
                             <th width="180px" class="text-center">Ações</th>
                         </tr>
                     </thead>
@@ -115,7 +114,7 @@
                                 <td class="align-middle">
                                     {% if item.link %}
                                         <a href="{{ item.link }}" target="_blank" class="btn btn-outline-info btn-sm">
-                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Acessar Link
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Acessar
                                         </a>
                                     {% else %}
                                         <span class="text-muted-emphasis small"><em>Sem link</em></span>
@@ -155,11 +154,11 @@
                     <input type="hidden" name="ambiente" value="{{ aba_ativa }}">
                     
                     <div class="mb-3">
-                        <label class="form-label fw-medium">Namespace</label>
+                        <label class="form-label fw-medium">Namespace / Contexto</label>
                         <input type="text" name="namespace" id="edit-namespace" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-medium">Deploy/Workload</label>
+                        <label class="form-label fw-medium">Deploy / Serviço</label>
                         <input type="text" name="deploy" id="edit-deploy" class="form-control" required>
                     </div>
                     <div class="mb-3">
@@ -186,7 +185,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // LÓGICA DE DARK MODE
         const themeSwitcher = document.getElementById('themeSwitcher');
         const htmlElement = document.documentElement;
         
@@ -211,7 +209,6 @@
             }
         }
 
-        // LÓGICA PARA INJETAR DADOS E ABRIR O MODAL
         const bsEditModal = new bootstrap.Modal(document.getElementById('editModal'));
 
         function openEditModal(id, namespace, deploy, port, nodeport, link) {
@@ -225,34 +222,27 @@
             bsEditModal.show();
         }
 
-        // ==========================================
-        // LÓGICA DE ORDENAÇÃO DINÂMICA DA TABELA
-        // ==========================================
         document.querySelectorAll('.sortable').forEach(header => {
             header.addEventListener('click', () => {
-                const table = document.getElementById('rancherTable');
+                const table = document.getElementById('infraTable');
                 const tbody = table.querySelector('tbody');
                 const rows = Array.from(tbody.querySelectorAll('tr'));
                 
-                // Se a tabela estiver vazia (mensagem de "Nenhum mapeamento"), não faz nada
                 if (rows.length === 1 && rows[0].querySelector('td').getAttribute('colspan')) return;
 
                 const index = parseInt(header.getAttribute('data-index'));
                 const type = header.getAttribute('data-type');
                 const isAscending = header.classList.contains('th-sort-asc');
                 
-                // Reseta os ícones de todas as colunas
                 document.querySelectorAll('.sortable').forEach(h => {
                     h.classList.remove('th-sort-asc', 'th-sort-desc');
                     h.querySelector('.sort-icon').className = 'fa-solid fa-sort sort-icon';
                 });
 
-                // Alterna a direção da ordenação atual
                 const direction = isAscending ? -1 : 1;
                 header.classList.add(isAscending ? 'th-sort-desc' : 'th-sort-asc');
                 header.querySelector('.sort-icon').className = isAscending ? 'fa-solid fa-sort-down sort-icon text-primary' : 'fa-solid fa-sort-up sort-icon text-primary';
 
-                // Executa o Sort das linhas
                 rows.sort((rowA, rowB) => {
                     let cellA = rowA.children[index].textContent.trim();
                     let cellB = rowB.children[index].textContent.trim();
@@ -260,11 +250,9 @@
                     if (type === 'number') {
                         return (parseInt(cellA, 10) - parseInt(cellB, 10)) * direction;
                     }
-                    
                     return cellA.localeCompare(cellB, 'pt-BR', { sensitivity: 'base' }) * direction;
                 });
 
-                // Re-injeta as linhas ordenadas no corpo da tabela
                 rows.forEach(row => tbody.appendChild(row));
             });
         });

@@ -6,7 +6,7 @@ from psycopg2.extras import DictCursor
 app = Flask(__name__)
 
 DB_HOST = os.getenv("DB_HOST", "db")
-DB_NAME = os.getenv("DB_NAME", "rancher_ports")
+DB_NAME = os.getenv("DB_NAME", "infra_ports")
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
 
@@ -20,7 +20,6 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
-    # Adicionada a coluna 'link' (TEXT, permitindo nulo caso não queira preencher)
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS mapeamentos (
@@ -62,7 +61,7 @@ def adicionar():
     deploy = request.form["deploy"]
     port = request.form["port"]
     nodeport = request.form["nodeport"]
-    link = request.form.get("link", "")  # Captura o link do formulário
+    link = request.form.get("link", "")
 
     try:
         conn = get_db_connection()
@@ -75,7 +74,7 @@ def adicionar():
         cur.close()
         conn.close()
     except Exception as e:
-        print(f"Erro ao inserir: {e}")
+        print(f"Erro ao inserir (NodePort duplicado no mesmo ambiente): {e}")
 
     return redirect(url_for("index", aba=ambiente))
 
@@ -88,7 +87,7 @@ def editar():
     deploy = request.form["deploy"]
     port = request.form["port"]
     nodeport = request.form["nodeport"]
-    link = request.form.get("link", "")  # Captura o link editado
+    link = request.form.get("link", "")
 
     try:
         conn = get_db_connection()
